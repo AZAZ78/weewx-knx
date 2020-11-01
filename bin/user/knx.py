@@ -1,0 +1,89 @@
+# Copyright 2017-2020 Alexander Zeh
+# weewx module that writes weather information to knx bus
+# Its necessary to install pknx to use this service
+
+import os
+import syslog
+from datetime import time, date, datetime
+from distutils.version import StrictVersion
+
+import weeutil.weeutil
+import weewx.engine
+import weewx.units
+
+from knxip.ip import KNXIPTunnel
+from knxip.conversion import float_to_knx2, knx2_to_float, \
+    knx_to_time, time_to_knx, knx_to_date, date_to_knx, datetime_to_knx,\
+    knx_to_datetime
+from knxip.core import KNXException
+
+VERSION = "0.1"
+REQUIRED_WEEWX = "3.6.1"
+REQUIRED_KNXIP = "0.3.2"
+
+if StrictVersion(weewx.__version__) < StrictVersion(REQUIRED_WEEWX):
+    raise weewx.UnsupportedFeature("weewx %s or greater is required, found %s"
+                                   % (REQUIRED_WEEWX, weewx.__version__))
+
+if StrictVersion(knxip.__version__) < StrictVersion(REQUIRED_KNXIP):
+    raise weewx.UnsupportedFeature("knxip %s or greater is required, found %s"
+                                   % (REQUIRED_KNXIP, knxip.__version__))
+                                   
+def logmsg(level, msg):
+    syslog.syslog(level, 'weewx_knx: %s' % msg)
+
+def logdbg(msg):
+    logmsg(syslog.LOG_DEBUG, msg)
+
+def loginf(msg):
+    logmsg(syslog.LOG_INFO, msg)
+
+def logerr(msg):
+    logmsg(syslog.LOG_ERR, msg)
+                                   
+class KNX(weewx.engine.StdService):
+    def __init__(self, engine, config_dict):
+        super(KNX, self).__init__(engine, config_dict)
+        conf = config_dict['KNX']
+        
+        # Read default information for gateway
+        self._gateway_ip = conf['gateway_ip']
+        self._gateway_port = int(conf.get('gateway_port', 3671))
+        
+        
+        # Read the mapping information for KNX and store them locally
+        self._knx_map = conf.copy();
+        del self._knx_map['gateway_ip']
+        del self._knx_map['gateway_port']
+        
+        self._knx_tunnel = KNXIPTunnel(self._gateway_ip, self._gateway_port)
+        
+        self.bind(weewx.NEW_ARCHIVE_RECORD, self._handle_new_archive_record)
+        
+        loginf('Started knx extension for weewx for gateway ' % self._gateway_ip)
+        if self._gateway_ip is '0.0.0.0':
+            loginf("Will try to auto-detect KNX/IP gateway")
+
+    def _handle_new_archive_record(self, event):
+        record = event.record
+        tunnel = self._knx_tunnel
+
+        try:
+            if not tunnel.check_connection_state():
+                res = self._knx_tunnel.connect()
+                if not res:
+                    logerr("Could not connect to KNX/IP interface %s, retry later", self._gateway_ip)
+                    return
+        except KNXException as ex:
+            logerr("Exception during connect to KNX/IP interface %s: %s, retry later", self._gateway_ip, ex)
+            return
+
+        try:
+            for key, value in self._knx_map.items():
+                data = float(record.get(key))
+                if data is not None:
+                    encoded_data = float_to_knx2(data)
+                    tunnel.group_write(value, encoded_data)
+        except KNXException as ex:
+            logerr('KNXException raised : ' % ex)
+                

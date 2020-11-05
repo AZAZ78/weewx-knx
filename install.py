@@ -23,7 +23,7 @@ class KNXInstaller(ExtensionInstaller):
 					'outTemp': '5.5.150',
 					'windSpeed': '5.5.151',
 					'windGust': '5.5.152',
-					'hourRain': '5.5.153',
+					'rainRate': '5.5.153',
 					'outHumidity': '5.5.154',
                 },
             },

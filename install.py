@@ -2,12 +2,10 @@
 # Copyright 2020 Alexander Zeh
 # Distributed under the terms of the GNU Public License (GPLv3)
 
-from setup import ExtensionInstaller
-
+from weecfg.extension import ExtensionInstaller
 
 def loader():
     return KNXInstaller()
-
 
 class KNXInstaller(ExtensionInstaller):
     def __init__(self):

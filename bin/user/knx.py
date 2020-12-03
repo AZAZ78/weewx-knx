@@ -96,11 +96,14 @@ class KNX(weewx.engine.StdService):
 
         try:
             for key, value in self._knx_map.items():
-                data = float(record.get(key))
-                logdbg('Send {0} with data {1} to address {2}'.format(key, data, value))
+                data = record.get(key)
                 if data is not None:
-                    encoded_data = float_to_knx2(data)
+                    logdbg('Send {0} with data {1} to address {2}'.format(key, data, value))
+                    encoded_data = float_to_knx2(float(data))
                     tunnel.group_write(parse_group_address(value), encoded_data)
+                else:
+                    logerr('No value available for {0} and address {1}, nothing send'.format(key, value))
+
         except KNXException as ex:
             logerr('KNXException raised : {0}'.format(ex))
 

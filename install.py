@@ -20,11 +20,11 @@ class KNXInstaller(ExtensionInstaller):
                 'KNX': {
 					'gateway_ip': '192.168.2.70',
 					'gateway_port': 3671,
-					'outTemp': '5.5.150',
-					'windSpeed': '5.5.151',
-					'windGust': '5.5.152',
-					'rainRate': '5.5.153',
-					'outHumidity': '5.5.154',
+					'outTemp': '5/5/150',
+					'windSpeed': '5/5/151',
+					'windGust': '5/5/152',
+					'rainRate': '5/5/153',
+					'outHumidity': '5/5/154',
                 },
             },
             files=[('bin/user', ['bin/user/knx.py'])]

@@ -10,7 +10,7 @@ def loader():
 class KNXInstaller(ExtensionInstaller):
     def __init__(self):
         super(KNXInstaller, self).__init__(
-            version='0.1',
+            version='1.1',
             name='weewx_knx',
             description='Write weather information to knx bus',
             author='Alexander Zeh',
@@ -19,7 +19,7 @@ class KNXInstaller(ExtensionInstaller):
             config={
                 'KNX': {
 					'gateway_ip': '192.168.2.70',
-					'gateway_port': 3671,
+					'gateway_port': 6720,
 					'outTemp': '5/5/150',
 					'windSpeed': '5/5/151',
 					'windGust': '5/5/152',

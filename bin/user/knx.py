@@ -15,7 +15,7 @@ from knxip.conversion import float_to_knx2, knx2_to_float, \
     knx_to_datetime
 from knxip.core import KNXException, parse_group_address
 
-VERSION = "0.1"
+VERSION = "1.0"
 REQUIRED_WEEWX = "3.6.1"
 REQUIRED_KNXIP = "0.3.2"
 
@@ -87,9 +87,6 @@ class KNX(weewx.engine.StdService):
 
         try:
             res = tunnel.connect()
-            if not res:
-                logerr('Could not connect to KNX/IP interface {0}, retry later'.format(self._gateway_ip))
-                return
         except KNXException as ex:
             logerr('Exception during connect to KNX/IP interface {0}: {1}, retry later'.format(self._gateway_ip, ex))
             return
